@@ -1,0 +1,1061 @@
+Super Mall:
+
+login.html:
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SuperMall Login</title>
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+    <div class="login-container">
+        <h2>SuperMall Login</h2>
+        <input id="email" placeholder="Email">
+        <input id="password" type="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+        <button class="register-btn" onclick="register()">Register</button>
+    </div>
+
+    <!-- Main Login JS -->
+    <script type="module" src="login.js"></script>
+</body>
+</html>
+
+
+login.css:
+/* ---------- Login Page ---------- */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(135deg, #a1c4fd, #c2e9fb); /* Blue Horizon gradient */
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ---------- Login Container ---------- */
+.login-container {
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 12px;
+    width: 350px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.login-container:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+/* ---------- Heading ---------- */
+.login-container h2 {
+    margin-bottom: 25px;
+    color: #0f4c81;
+}
+
+/* ---------- Input Fields ---------- */
+.login-container input {
+    width: 100%;
+    padding: 12px 15px;
+    margin: 10px 0;
+    border-radius: 50px;
+    border: 1px solid #ccc;
+    outline: none;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.login-container input:focus {
+    border-color: #1a73e8;
+    box-shadow: 0 0 8px rgba(26,115,232,0.3);
+}
+
+/* ---------- Buttons ---------- */
+.login-container button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 8px;
+    background: #1a73e8;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.login-container button:hover {
+    background: #0f4c81;
+    transform: translateY(-2px);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 400px) {
+    .login-container {
+        width: 90%;
+        padding: 25px;
+    }
+}
+
+
+login.js:
+import { auth, db, doc, setDoc, getDoc }
+from "./firebase.js";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+/* ---------- Register ---------- */
+window.register = async function () {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    try {
+        const userCredential = await createUserWithEmailAndPassword( auth, email, password );
+        const uid = userCredential.user.uid;
+        await setDoc( doc(db, "users", uid), { role: "user" } );
+        alert("Registered Successfully");
+    } 
+    catch (error) {
+        alert(error.message);
+    }
+}
+
+/* ---------- Login ---------- */
+window.login = async function () {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const uid = userCredential.user.uid.trim();
+        console.log("USER UID:", uid);
+        const userData = await getDoc(doc(db, "users", uid));
+        if (!userData.exists()) {
+            alert("User role document missing!");
+            return;
+        }
+        const role = userData.data().role;
+        if (role === "admin") {
+            window.location = "admin.html";
+        } else {
+            window.location = "user.html";
+        }
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+/* ---------- Session Check ---------- */
+onAuthStateChanged(auth, (user) => {
+    const isLoginPage = window.location.pathname.includes("login.html");
+    if (!user && !isLoginPage) {
+        window.location = "login.html";
+    }
+});
+
+/* ---------- Logout ---------- */
+window.logout = function () {
+    signOut(auth);
+}
+
+user.html:
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SuperMall</title>
+    <link rel="stylesheet" href="user.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <h1>SuperMall Shopping</h1>
+    </header>
+
+    <!-- Search Box -->
+    <div class="search-container">
+        <input type="text" id="search" placeholder="Filter by Category" onkeyup="filterShops()">
+    </div>
+
+    <!-- Products Section -->
+    <section>
+        <h2>Products</h2>
+        <div id="shopContainer" class="container"></div>
+    </section>
+
+    <!-- Shop Wise Offers -->
+    <section>
+        <h2>Shop Wise Offers</h2>
+        <div id="offerSection" class="container"></div>
+    </section>
+
+    <!-- Product Comparison -->
+    <section>
+        <h2>Product Comparison</h2>
+        <div id="compareBox" class="container"></div>
+    </section>
+
+    <!-- Cart Section -->
+    <section>
+        <h2>Cart</h2>
+        <div id="cartBox" class="container"></div>
+    </section>
+
+    <!-- Billing Section -->
+    <section>
+        <h2>Billing</h2>
+        <div id="billBox" class="container"></div>
+    </section>
+
+    <!-- Logout Button -->
+    <div class="logout-container">
+        <button onclick="logout()">Logout</button>
+    </div>
+
+    <!-- Main App JS -->
+    <script type="module" src="user.js"></script>
+</body>
+</html>
+
+
+user.css:(1)
+/* ---------- Global Styles ---------- */
+body {
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(135deg, #a1c4fd, #c2e9fb); 
+    color: #333;
+    line-height: 1.6;
+}
+
+h1, h2 {
+    margin: 10px 0;
+    font-weight: 600;
+}
+
+/* ---------- Header ---------- */
+header {
+    background: linear-gradient(90deg, #1a73e8, #0f4c81); 
+    color: white;
+    padding: 20px 15px;
+    text-align: center;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+/* ---------- Search Box ---------- */
+.search-container {
+    text-align: center;
+    margin: 25px 0;
+}
+
+.search-container input {
+    padding: 12px 20px;
+    width: 320px;
+    max-width: 90%;
+    border-radius: 50px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    outline: none;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.search-container input:focus {
+    border-color: #1a73e8;
+    box-shadow: 0 0 8px rgba(26,115,232,0.4);
+}
+
+/* ---------- Section Titles ---------- */
+section {
+    margin: 30px 15px;
+}
+
+section h2 {
+    border-left: 5px solid #1a73e8;
+    padding-left: 10px;
+    color: #1a73e8;
+    margin-bottom: 20px;
+}
+
+/* ---------- Grid Container ---------- */
+.container {
+    display: grid;
+    gap: 20px;
+}
+
+.container .card {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* ---------- Card Style ---------- */
+.card {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+.card h3 {
+    margin-top: 0;
+    color: #0f4c81; 
+    font-size: 20px;
+}
+
+.card p {
+    margin: 8px 0;
+    color: #555;
+    font-size: 14px;
+}
+
+/* ---------- Buttons ---------- */
+button {
+    background: #1a73e8;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+}
+
+button:hover {
+    background: #0f4c81;
+    transform: translateY(-2px);
+}
+
+.card button {
+    width: 100%;
+    text-align: center;
+}
+
+.card label {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+.card label input {
+    margin-right: 5px;
+}
+
+/* ---------- Logout Button ---------- */
+.logout-container {
+    text-align: center;
+    margin: 40px 0;
+}
+
+.logout-container button {
+    padding: 12px 25px;
+    font-size: 16px;
+    background: #e63946; 
+}
+
+.logout-container button:hover {
+    background: #b22234;
+}
+
+/* ---------- Section Bachgrounds ---------- */
+#cartBox, #billBox, #compareBox, #offerSection, #shopContainer {
+    background: #f8fafc; 
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.03);
+}
+
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 22px;
+    }
+
+    .search-container input {
+        width: 90%;
+    }
+
+    section {
+        margin: 20px 10px;
+    }
+}
+
+
+
+user.js:
+import { auth, db, collection, getDocs, addDoc }    
+from "./firebase.js";
+
+import { signOut, onAuthStateChanged }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+/* ---------- Session Check ---------- */
+onAuthStateChanged(auth, (user) => {
+    if (!user) {
+        window.location = "login.html";
+    }
+});
+
+/* ---------- Logout ---------- */
+window.logout = function () {
+    signOut(auth).then(() => window.location = "login.html");
+}
+
+const container = document.getElementById("shopContainer");
+const cartBox = document.getElementById("cartBox");
+const billBox = document.getElementById("billBox");
+const compareBox = document.getElementById("compareBox");
+const offerSection = document.getElementById("offerSection");
+
+/* ---------- Load Shop ---------- */
+async function loadShops() {
+    const snapshot = await getDocs(collection(db, "shops"));
+    container.innerHTML = "";
+    snapshot.forEach(docu => {
+        const shop = docu.data();
+        container.innerHTML += `
+            <div class="card">
+                <h3>${shop.name}</h3>
+                <p>Category: ${shop.category}</p>
+                <p>Floor: ${shop.floor}</p>
+                <p>Offer: ${shop.offer}</p>
+                <button>View Shop</button>
+            </div>
+            `;
+    });
+}
+loadShops();
+
+/* ---------- Filter ---------- */
+window.filterShops = function () {
+    let input = document.getElementById("search").value.toLowerCase();
+    document
+        .querySelectorAll(".card")
+        .forEach(card => {
+            card.style.display = card.innerText.toLowerCase().includes(input) ? "block" : "none";
+        });
+}
+
+
+/* ---------- load shop offer ---------- */
+async function loadShopOffers() {
+    const snapshot = await getDocs(collection(db, "shops"));
+    offerSection.innerHTML = "";
+    snapshot.forEach(docu => {
+        const shop = docu.data();
+        offerSection.innerHTML += `
+            <div class="card">
+                <h3>${shop.name}</h3>
+                <p>Offer : ${shop.offer}</p>
+                <button onclick="viewProducts('${docu.id}')">
+                View Products
+                </button>
+            </div>
+        `;
+    });
+}
+loadShopOffers();
+
+/* ---------- View Products Of Selected Shop ---------- */
+window.viewProducts = async function (shopId) {
+        const productRef = collection(db, "shops", shopId, "products");
+        const snapshot = await getDocs(productRef);
+        container.innerHTML = "<h2>Product</h2>";
+        snapshot.forEach(docu => {
+            const p = docu.data();
+            container.innerHTML += `
+                <div class="card">
+                    <h3>${p.name}</h3>
+                    <p>Price : ₹${p.price}</p>
+                    <p>${p.features}</p>
+                    <p>Offer : ${p.offer}</p>
+                    <button onclick="addToCart('${p.name}', ${p.price})">Add To Cart</button>
+                    <!-- Checkbox beside Compare -->
+                    <label style="display: inline-flex; align-items: center; margin-top: 10px; cursor: pointer;">
+                        <input type="checkbox" 
+                            style="margin-right: 5px;" 
+                            onclick="selectCompare('${p.name}', '${p.price}', '${p.features}')">
+                        Compare
+                    </label>
+                </div>
+            `;
+        });
+    }
+
+/* ---------- Add Comparison ---------- */
+let compareList = [];
+window.selectCompare = function (name, price, features) {
+        if (compareList.length >= 2) {
+            alert("Only 2 products allowed");
+            return;
+        }
+        if (!compareList.find(p => p.name === name)) {
+            compareList.push({ name, price, features });
+        }
+        showComparison();
+    }
+
+function showComparison() {
+    compareBox.innerHTML = "";
+    compareList.forEach(p => {
+        compareBox.innerHTML += `
+            <div class="card">
+            <h3>${p.name}</h3>
+            <p>Price : ₹${p.price}</p>
+            <p>${p.features}</p>
+            </div>
+        `;
+    });
+}
+
+/* ---------- Add to cart system ---------- */
+let cart =
+    JSON.parse(localStorage.getItem("cart")) || [];
+
+
+/* ---------- chart logic ---------- */
+window.addToCart = function (name, price) {
+
+    cart.push({ name, price });
+    renderCart();
+}
+
+/* ---------- render chart ---------- */
+function renderCart() {
+    localStorage.setItem( "cart", JSON.stringify(cart) );
+    cartBox.innerHTML = "";
+    let total = 0;
+    cart.forEach((item, i) => {
+        total += Number(item.price);
+        cartBox.innerHTML += `
+            <div class="card">
+                ${item.name} - ₹${item.price}
+                <button onclick="removeItem(${i})"> Remove </button>
+            </div>
+        `;
+    });
+    generateBill(total);
+}
+
+/* ---------- Remove Item ---------- */
+window.removeItem = function (index) {
+    cart.splice(index, 1);
+    renderCart();
+}
+
+
+/* ---------- Generate Bill ---------- */
+function generateBill(total) {
+    billBox.innerHTML = `
+        <div class="card">
+            <h3>Total Amount : ₹${total}</h3>
+            <button onclick="checkout(${total})"> Generate Bill </button>
+        </div>
+    `;
+}
+
+/* ---------- Checkout ---------- */
+window.checkout = async function (total) {
+    const orderItems = [...cart];
+    await addDoc(
+        collection(db, "orders"),
+        {
+            userId: auth.currentUser.uid,
+            items: orderItems,
+            amount: total,
+            date: new Date().toLocaleString()
+        });
+    generateInvoice(orderItems, total);
+    cart = [];
+    renderCart();
+    alert("Order Placed ");
+}
+
+/* ---------- PDF Invoice Generator ---------- */
+window.generateInvoice = function (items, total) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // Header
+    doc.setFontSize(22);
+    doc.setTextColor(26, 115, 232); 
+    doc.text("SuperMall Invoice", 20, 20);
+
+    // Date
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    doc.text("Date: " + new Date().toLocaleString(), 20, 30);
+
+    // Draw a line
+    doc.setDrawColor(0);
+    doc.setLineWidth(0.5);
+    doc.line(20, 35, 190, 35);
+
+    // Table headers
+    let startY = 45;
+    doc.setFontSize(12);
+    doc.setTextColor(0);
+    doc.text("Product", 20, startY);
+    doc.text("Price (Rs)", 150, startY);
+
+    startY += 5;
+    doc.setLineWidth(0.3);
+    doc.line(20, startY, 190, startY);
+
+    // Table content
+    startY += 10;
+    items.forEach(item => {
+        doc.text(item.name, 20, startY);
+        doc.text(item.price.toString(), 150, startY);
+        startY += 10;
+    });
+
+    // Draw total
+    startY += 5;
+    doc.setLineWidth(0.5);
+    doc.line(20, startY, 190, startY);
+    startY += 10;
+    doc.setFontSize(14);
+    doc.setTextColor(26, 115, 232);
+    doc.text("Total: Rs" + total, 20, startY);
+
+    // Footer
+    startY += 15;
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text("Thank you for shopping at SuperMall!", 20, startY);
+
+    // Save PDF
+    doc.save("SuperMall_Invoice.pdf");
+};
+
+
+
+admin.html:
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SuperMall Admin Dashboard</title>
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>SuperMall Admin Dashboard</header>
+
+    <!-- Create Shop Section -->
+    <section>
+        <h2>Create Shop Details</h2>
+        <form id="shopForm">
+            <input id="shopName" type="text" placeholder="Shop Name" required>
+            <input id="category" type="text" placeholder="Category">
+            <input id="floor" type="text" placeholder="Floor">
+            <input id="offer" type="text" placeholder="Offer">
+            <button type="submit">Add Shop</button>
+        </form>
+    </section>
+
+    <!-- Add Product Section -->
+    <section>
+        <h2>Add Product To Shop</h2>
+        <div class="product-form">
+            <select id="pShopId">
+                <option value="">Select Shop</option>
+            </select>
+            <input id="productName" type="text" placeholder="Product Name">
+            <input id="price" type="number" placeholder="Price">
+            <input id="features" type="text" placeholder="Features">
+            <input id="productOffer" type="text" placeholder="Offer">
+            <button type="button" onclick="addProduct()">Add Product</button>
+        </div>
+    </section>
+
+    <!-- Manage Shops Section -->
+    <section>
+        <h2>Manage Shops</h2>
+        <div id="adminShopList"></div>
+    </section>
+
+    <!-- Analytics Section -->
+    <section>
+        <h2>Analytics Dashboard</h2>
+        <div id="analytics"></div>
+    </section>
+
+    <!-- Logout Button -->
+    <section class="logout-section">
+        <button onclick="logout()">Logout</button>
+    </section>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Admin JS -->
+    <script type="module" src="admin.js"></script>
+
+</body>
+</html>
+
+
+
+admin.css:
+/* ---------- Global Styles ---------- */
+body {
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(135deg, #a1c4fd, #c2e9fb); /* soft professional gradient */
+    color: #333;
+    line-height: 1.6;
+}
+
+h1, h2 {
+    margin: 0 0 15px 0;
+    font-weight: 600;
+    color: #1a73e8;
+}
+
+/* ---------- Header ---------- */
+header {
+    background: linear-gradient(90deg, #1a73e8, #0f4c81);
+    color: white;
+    padding: 20px 15px;
+    text-align: center;
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    font-size: larger;
+}
+
+header h1 {
+    font-size: 28px;
+}
+
+/* ---------- Section ---------- */
+section {
+    background: #ffffff;
+    margin: 25px auto;
+    padding: 20px;
+    border-radius: 12px;
+    max-width: 1000px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+section:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+section h2 {
+    border-left: 5px solid #1a73e8;
+    padding-left: 10px;
+    margin-bottom: 20px;
+}
+
+/* ---------- Fprms ---------- */
+form, .product-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+input, select {
+    flex: 1 1 200px;
+    padding: 12px 15px;
+    border-radius: 50px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+}
+
+input:focus, select:focus {
+    border-color: #1a73e8;
+    box-shadow: 0 0 8px rgba(26,115,232,0.3);
+}
+
+/* ---------- Buttons ---------- */
+button {
+    padding: 12px 20px;
+    font-size: 15px;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #1a73e8;
+    color: white;
+}
+
+button:hover {
+    background: #0f4c81;
+    transform: translateY(-2px);
+}
+
+/* ---------- Shop Cards---------- */
+#adminShopList .shop-card {
+    background: #f8fafc;
+    padding: 20px;
+    margin-bottom: 15px;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#adminShopList .shop-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+#adminShopList .shop-card h3 {
+    margin-top: 0;
+    color: #0f4c81;
+}
+
+#adminShopList .shop-card p {
+    margin: 5px 0;
+    color: #555;
+}
+
+/* ---------- Analytics ---------- */
+#analytics {
+    margin-top: 15px;
+}
+
+#analytics .shop-card {
+    padding: 20px;
+}
+
+/* ---------- Logout Button ---------- */
+.logout-section {
+    text-align: center;
+    margin: 25px auto;
+}
+
+.logout-section button {
+    padding: 12px 25px;
+    font-size: 16px;
+    background: #e63946;
+}
+
+.logout-section button:hover {
+    background: #b22234;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+    form, .product-form {
+        flex-direction: column;
+    }
+
+    input, select, button {
+        width: 100%;
+    }
+
+    header h1 {
+        font-size: 22px;
+    }
+
+    section {
+        margin: 20px 15px;
+        padding: 15px;
+    }
+}
+
+
+admin.js:
+import { auth, db, collection, addDoc, getDocs, deleteDoc, doc } 
+from "./firebase.js";
+import { signOut, onAuthStateChanged }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+onAuthStateChanged(auth, (user) => {
+    if (!user) {
+        window.location = "login.html";
+    }
+});
+
+/* ---------- Logout ---------- */
+window.logout = function () {
+    signOut(auth)
+        .then(() => window.location = "login.html");
+}
+
+/* ---------- Add Shop ---------- */
+const form = document.getElementById("shopForm");
+if (form) {
+    form.addEventListener("submit",
+        async (e) => {
+            e.preventDefault();
+            const shop = {
+                name: shopName.value,
+                category: category.value,
+                floor: floor.value,
+                offer: offer.value
+            };
+            await addDoc(collection(db, "shops"), shop);
+            alert("Shop Added");
+            form.reset();
+            loadShops();
+        });
+}
+
+/* ---------- Load Shops ---------- */
+async function loadShops() {
+    const adminShopList = document.getElementById("adminShopList");
+    const snapshot = await getDocs(collection(db, "shops"));
+    adminShopList.innerHTML = "";
+    snapshot.forEach((docu) => {
+        const data = docu.data();
+        adminShopList.innerHTML += `
+<div class="shop-card">
+<h3>${data.name}</h3>
+<p>Category: ${data.category}</p>
+<p>Floor: ${data.floor}</p>
+<p>Offer: ${data.offer}</p>
+<button onclick="deleteShop('${docu.id}')">
+Delete
+</button>
+</div>
+`;
+    });
+}
+loadShops();
+
+/* ---------- loadShopDropdown ---------- */
+async function loadShopDropdown() {
+    const snapshot = await getDocs(collection(db, "shops"));
+    const dropdown = document.getElementById("pShopId");
+    dropdown.innerHTML = "";
+    snapshot.forEach(doc => {
+        const shop = doc.data();
+        dropdown.innerHTML += `
+<option value="${doc.id}">
+${shop.name}
+</option>
+`;
+    });
+
+}
+loadShopDropdown();
+
+/* ---------- Delete ---------- */
+window.deleteShop = async function (id) {
+        await deleteDoc(doc(db, "shops", id));
+        loadShops();
+    }
+
+/* ---------- Add product function ---------- */
+window.addProduct = async function () {
+    const shopId = document.getElementById("pShopId").value;
+    const product = {
+        name: productName.value,
+        price: price.value,
+        features: features.value,
+        offer: productOffer.value
+    };
+    if (!shopId) {
+        alert("Enter Shop ID");
+        return;
+    }
+    await addDoc( collection(db, "shops", shopId, "products"), product );
+    alert("Product Added");
+}
+
+/* ---------- Load Analytics ---------- */
+async function loadAnalytics() {
+    const snapshot = await getDocs(collection(db, "orders"));
+    let totalSales = 0;
+    let orders = 0;
+    snapshot.forEach(doc => {
+        orders++;
+        totalSales += doc.data().amount;
+    });
+    document.getElementById("analytics").innerHTML = `
+<div class="shop-card">
+<h3>Total Orders : ${orders}</h3>
+<h3>Total Revenue : ₹${totalSales}</h3>
+<canvas id="salesChart"></canvas>
+</div>
+`;
+    drawChart(totalSales, orders);
+}
+loadAnalytics();
+
+/* ---------- chart dashboard ---------- */
+let chart;
+function drawChart(sales, orders) {
+    if (chart) {
+        chart.destroy();
+    }
+    chart = new Chart(
+        document.getElementById("salesChart"),
+        {
+            type: "bar",
+            data: {
+                labels: ["Orders", "Revenue"],
+                datasets: [{
+                    label: "Mall Analytics",
+                    data: [orders, sales]
+                }]
+            }
+        });
+}
+
+
+
+firebase.js:
+/* ================= Firebase ================= */
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, setDoc, getDoc }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+import { getAuth }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+/* ================= Web app's Firebase configuration ================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyBtRTvQWQliMzSfjWorfNDV0KSoPAh78TI",
+  authDomain: "supermall-994d9.firebaseapp.com",
+  projectId: "supermall-994d9",
+  storageBucket: "supermall-994d9.firebasestorage.app",
+  messagingSenderId: "568601789176",
+  appId: "1:568601789176:web:1ed7efe084de1ec341b10d"
+};
+
+/* ================= Initialize Firebase ================= */
+const app=initializeApp(firebaseConfig);
+
+/* ================= Export Firebase services ================= */
+export const db=getFirestore(app);
+export const auth=getAuth(app);
+export{ collection, addDoc, getDocs, deleteDoc, doc, setDoc, getDoc };

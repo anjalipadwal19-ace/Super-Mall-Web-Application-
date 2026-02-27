@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SuperMall Admin Dashboard</title>
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>SuperMall Admin Dashboard</header>
+
+    <!-- Create Shop Section -->
+    <section>
+        <h2>Create Shop Details</h2>
+        <form id="shopForm">
+            <input id="shopName" type="text" placeholder="Shop Name" required>
+            <input id="category" type="text" placeholder="Category">
+            <input id="floor" type="text" placeholder="Floor">
+            <input id="offer" type="text" placeholder="Offer">
+            <button type="submit">Add Shop</button>
+        </form>
+    </section>
+
+    <!-- Add Product Section -->
+    <section>
+        <h2>Add Product To Shop</h2>
+        <div class="product-form">
+            <select id="pShopId">
+                <option value="">Select Shop</option>
+            </select>
+            <input id="productName" type="text" placeholder="Product Name">
+            <input id="price" type="number" placeholder="Price">
+            <input id="features" type="text" placeholder="Features">
+            <input id="productOffer" type="text" placeholder="Offer">
+            <button type="button" onclick="addProduct()">Add Product</button>
+        </div>
+    </section>
+
+    <!-- Manage Shops Section -->
+    <section>
+        <h2>Manage Shops</h2>
+        <div id="adminShopList"></div>
+    </section>
+
+    <!-- Analytics Section -->
+    <section>
+        <h2>Analytics Dashboard</h2>
+        <div id="analytics"></div>
+    </section>
+
+    <!-- Logout Button -->
+    <section class="logout-section">
+        <button onclick="logout()">Logout</button>
+    </section>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Admin JS -->
+    <script type="module" src="admin.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,179 @@
+/* ---------- Global Styles ---------- */
+body {
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(135deg, #a1c4fd, #c2e9fb); 
+    color: #333;
+    line-height: 1.6;
+}
+
+h1, h2 {
+    margin: 10px 0;
+    font-weight: 600;
+}
+
+/* ---------- Header ---------- */
+header {
+    background: linear-gradient(90deg, #1a73e8, #0f4c81); 
+    color: white;
+    padding: 20px 15px;
+    text-align: center;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+/* ---------- Search Box ---------- */
+.search-container {
+    text-align: center;
+    margin: 25px 0;
+}
+
+.search-container input {
+    padding: 12px 20px;
+    width: 320px;
+    max-width: 90%;
+    border-radius: 50px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    outline: none;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.search-container input:focus {
+    border-color: #1a73e8;
+    box-shadow: 0 0 8px rgba(26,115,232,0.4);
+}
+
+/* ---------- Section Titles ---------- */
+section {
+    margin: 30px 15px;
+}
+
+section h2 {
+    border-left: 5px solid #1a73e8;
+    padding-left: 10px;
+    color: #1a73e8;
+    margin-bottom: 20px;
+}
+
+/* ---------- Grid Container ---------- */
+.container {
+    display: grid;
+    gap: 20px;
+}
+
+.container .card {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* ---------- Card Style ---------- */
+.card {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+.card h3 {
+    margin-top: 0;
+    color: #0f4c81; 
+    font-size: 20px;
+}
+
+.card p {
+    margin: 8px 0;
+    color: #555;
+    font-size: 14px;
+}
+
+/* ---------- Buttons ---------- */
+button {
+    background: #1a73e8;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+}
+
+button:hover {
+    background: #0f4c81;
+    transform: translateY(-2px);
+}
+
+.card button {
+    width: 100%;
+    text-align: center;
+}
+
+.card label {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+.card label input {
+    margin-right: 5px;
+}
+
+/* ---------- Logout Button ---------- */
+.logout-container {
+    text-align: center;
+    margin: 40px 0;
+}
+
+.logout-container button {
+    padding: 12px 25px;
+    font-size: 16px;
+    background: #e63946; 
+}
+
+.logout-container button:hover {
+    background: #b22234;
+}
+
+/* ---------- Section Bachgrounds ---------- */
+#cartBox, #billBox, #compareBox, #offerSection, #shopContainer {
+    background: #f8fafc; 
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.03);
+}
+
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 22px;
+    }
+
+    .search-container input {
+        width: 90%;
+    }
+
+    section {
+        margin: 20px 10px;
+    }
+}

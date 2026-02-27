@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SuperMall</title>
+    <link rel="stylesheet" href="user.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <h1>SuperMall Shopping</h1>
+    </header>
+
+    <!-- Search Box -->
+    <div class="search-container">
+        <input type="text" id="search" placeholder="Filter by Category" onkeyup="filterShops()">
+    </div>
+
+    <!-- Products Section -->
+    <section>
+        <h2>Products</h2>
+        <div id="shopContainer" class="container"></div>
+    </section>
+
+    <!-- Shop Wise Offers -->
+    <section>
+        <h2>Shop Wise Offers</h2>
+        <div id="offerSection" class="container"></div>
+    </section>
+
+    <!-- Product Comparison -->
+    <section>
+        <h2>Product Comparison</h2>
+        <div id="compareBox" class="container"></div>
+    </section>
+
+    <!-- Cart Section -->
+    <section>
+        <h2>Cart</h2>
+        <div id="cartBox" class="container"></div>
+    </section>
+
+    <!-- Billing Section -->
+    <section>
+        <h2>Billing</h2>
+        <div id="billBox" class="container"></div>
+    </section>
+
+    <!-- Logout Button -->
+    <div class="logout-container">
+        <button onclick="logout()">Logout</button>
+    </div>
+
+    <!-- Main User JS -->
+    <script type="module" src="user.js"></script>
+</body>
+</html>
